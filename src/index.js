@@ -3,6 +3,8 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const compression = require('compression');
+const cookieParser = require('cookie-parser');
+const session = require('express-session');
 require('dotenv').config();
 
 const db = require('./config/database');
@@ -22,6 +24,19 @@ app.use(compression()); // Compresión de respuestas
 app.use(morgan('dev')); // Logger de requests
 app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
+app.use(cookieParser()); // Parse cookies
+
+// Sesiones con cookies cifradas
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'blex-session-secret-2025',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production', // true solo en HTTPS
+    httpOnly: true, // No accesible desde JavaScript del cliente
+    maxAge: 24 * 60 * 60 * 1000, // 24 horas
+  },
+}));
 
 // Routes
 app.use('/api', routes);
