@@ -30,10 +30,13 @@ const getAllUsers = async (req, res) => {
       paramIndex++;
     }
 
+    // Filtro por estado: 'active' (abierta) o 'inactive' (cerrada)
     if (status) {
-      whereConditions.push(`u.account_state = $${paramIndex}`);
-      params.push(status);
-      paramIndex++;
+      if (status === 'active') {
+        whereConditions.push(`u.closed_at IS NULL`);
+      } else if (status === 'inactive') {
+        whereConditions.push(`u.closed_at IS NOT NULL`);
+      }
     }
 
     const whereClause = whereConditions.length > 0
@@ -48,7 +51,10 @@ const getAllUsers = async (req, res) => {
         u.cuit,
         u.email,
         u.cvu,
-        u.account_state as estado,
+        CASE
+          WHEN u.closed_at IS NULL THEN 'active'
+          ELSE 'inactive'
+        END as estado,
         TO_CHAR(u.created_at, 'DD/MM/YYYY') as "fechaRegistro",
         COALESCE(
           (SELECT ROUND(w.balance::numeric / 100, 2)
@@ -95,9 +101,12 @@ const getAllUsers = async (req, res) => {
 
     res.status(200).json({
       users: usersResult.rows,
-      total,
-      page: parseInt(page),
-      totalPages,
+      pagination: {
+        total,
+        page: parseInt(page),
+        pages: totalPages,
+        limit: parseInt(limit),
+      },
     });
   } catch (error) {
     console.error('Error al obtener usuarios:', error);
@@ -124,7 +133,10 @@ const getUserById = async (req, res) => {
         u.cuit,
         u.email,
         u.cvu,
-        u.account_state as estado,
+        CASE
+          WHEN u.closed_at IS NULL THEN 'active'
+          ELSE 'inactive'
+        END as estado,
         TO_CHAR(u.created_at, 'DD/MM/YYYY') as "fechaRegistro",
         COALESCE(
           (SELECT ROUND(w.balance::numeric / 100, 2)

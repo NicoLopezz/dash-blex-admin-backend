@@ -39,6 +39,9 @@ router.get('/users/:userId/transactions/since', transactionsController.getNewTra
 // Dashboard routes - PRIORIDAD ALTA
 router.get('/dashboard/stats', dashboardController.getDashboardStats);
 router.get('/dashboard/chart/monthly-movement', dashboardController.getMonthlyMovement);
+router.get('/dashboard/report/all-users-transactions', dashboardController.getAllUsersTransactionsReport);
+router.get('/dashboard/report/users-last-transaction', dashboardController.getUsersLastTransactionReport);
+router.get('/dashboard/report/user-transactions/:cvu', dashboardController.getUserTransactionsByCVU);
 
 // Transactions routes - PRIORIDAD MEDIA
 router.get('/transactions/recent', dashboardController.getRecentTransactions);
@@ -82,6 +85,9 @@ router.get('/', (req, res) => {
       dashboard: {
         stats: 'GET /api/dashboard/stats',
         monthlyMovement: 'GET /api/dashboard/chart/monthly-movement?moneda=ARS&year=2025',
+        allUsersTransactions: 'GET /api/dashboard/report/all-users-transactions?endDate=2024-12-31 23:59:59',
+        usersLastTransaction: 'GET /api/dashboard/report/users-last-transaction',
+        userTransactionsByCVU: 'GET /api/dashboard/report/user-transactions/:cvu?endDate=2024-12-31 23:59:59',
       },
       transactions: {
         recent: 'GET /api/transactions/recent?limit=5',
